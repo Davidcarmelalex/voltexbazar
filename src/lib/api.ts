@@ -59,6 +59,8 @@ export interface Subscription {
 export interface Wallet {
   userId: string;
   address: string;
+  treasuryAddress?: string;
+  subwalletId?: string;
   balance: number;
   pendingBalance?: number;
   createdAt: string;
@@ -97,6 +99,8 @@ export interface Payment {
   currency: string;
   address: string;
   treasuryAddress?: string;
+  subwalletId?: string;
+  userDepositReference?: string;
   network: string;
   status?: string;
   confirmations?: number;
@@ -112,6 +116,7 @@ export interface PaymentConfig {
   paymentWindowMinutes: number;
   walletAddress: string;
   confirmationsRequired?: number;
+  subwalletMode?: string;
 }
 
 export interface Withdrawal {

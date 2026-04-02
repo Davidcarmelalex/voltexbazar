@@ -10,7 +10,7 @@ The following environment variables need to be configured for full production fu
 - `PAYMENT_SUPPORTED_TOKENS`: Allowed stablecoins for checkout, currently intended as `USDT,USDC`
 - `PAYMENT_CHAIN`: Default blockchain network for payment instructions
 - `PAYMENT_SUPPORTED_CHAINS`: Allowed EVM-compatible chains for checkout and settlement
-- `PAYMENT_WALLET_ADDRESS`: Treasury wallet address for receiving payments (currently placeholder)
+- `PAYMENT_WALLET_ADDRESS`: Optional override for the default treasury wallet `0xa8CBFC06285A23E892Fb74c34a63F28988Beb9C6`
 - `WEB3_RPC_URL`: Blockchain RPC URL for transaction monitoring (currently commented out)
 - `USDT_CONTRACT_ADDRESS`: USDT contract address for the selected chain (currently commented out)
 - `USDC_CONTRACT_ADDRESS`: USDC contract address for the selected chain (currently commented out)
@@ -32,17 +32,10 @@ The following environment variables need to be configured for full production fu
 - `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
 - `GOOGLE_CALLBACK_URL`: Google OAuth callback URL
 
-### 2. Database Migration Required
-The current implementation uses in-memory storage (Maps) for:
-- Users
-- OTPs
-- Analytics
-- Agents
-- Deployed agents
-- Payments
-- Wallets
+### 2. Wallet Custody Model Still Needs a Future Upgrade
+The application now uses a production-shaped shared treasury wallet plus persistent user-level virtual sub-wallet references for attribution.
 
-For production, these need to be migrated to a persistent database (PostgreSQL recommended as indicated in .env.example).
+This is acceptable for staged rollout and internal accounting, but it is not the same as issuing each user a separate managed on-chain deposit wallet. Moving to real per-user deposit wallets would require secure key generation, encrypted secret storage, rotation policy, and sweep tooling.
 
 ### 3. Webhook Security
 The crypto payment webhook endpoint (`/api/payment/webhook`) currently lacks proper signature verification. In production, this should validate webhook signatures from the blockchain node/payment processor.
@@ -52,6 +45,7 @@ While the payment architecture is production-ready:
 - Real blockchain integration is required for actual transaction monitoring
 - The webhook currently simulates confirmations rather than listening to actual blockchain events
 - Need to integrate with a blockchain listener service or use webhooks from a wallet service
+- Payment matching should eventually rely on real provider metadata, memo/reference support, or managed deposit addresses rather than application-only virtual references
 
 ### 5. Email Service
 No email service is configured for:
@@ -95,6 +89,8 @@ Need to implement:
 ✅ Agent marketplace and deployment simulation
 ✅ Payment architecture with proper address generation and expiration
 ✅ Wallet system with balance tracking
+✅ Shared treasury wallet configured at `0xa8CBFC06285A23E892Fb74c34a63F28988Beb9C6`
+✅ Stable virtual sub-wallet references assigned per user for attribution
 ✅ Dashboard with real-time data fetching
 ✅ WebSocket for real-time updates
 ✅ File-based persistence for payments and wallets (better than pure in-memory)
@@ -111,7 +107,8 @@ The application is architecturally ready for production with the following appro
 1. Set up PostgreSQL database and migrate from in-memory storage
 2. Configure the minimum required environment variables for desired functionality
 3. Implement proper webhook security for payment processing
-4. Deploy with proper monitoring and scaling considerations
-5. Add missing services incrementally as needed
+4. Add a real chain listener or provider-backed settlement source for the configured treasury wallet
+5. Deploy with proper monitoring and scaling considerations
+6. Add missing services incrementally as needed
 
 The core product flows (authentication, agent browsing, deployment simulation, payment generation) are functional and can provide value even without all external services configured.

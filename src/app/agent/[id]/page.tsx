@@ -343,9 +343,19 @@ export default function AgentDetailPage() {
                   <div className="mt-5 rounded-2xl border border-[#00E5FF]/30 bg-[#07111B] p-4">
                     <p className="text-sm font-semibold text-white">Payment ready</p>
                     <p className="mt-2 text-sm text-[#A0AEC0]">
-                      Send exactly <span className="text-white">{payment.amount} {payment.currency}</span> on <span className="text-white">{payment.network}</span>.
+                      Send exactly <span className="text-white">{payment.amount} {payment.currency}</span> on <span className="text-white">{payment.network}</span> to the generated deposit route below.
                     </p>
                     <p className="mt-3 break-all rounded-xl bg-[#101826] p-3 font-mono text-xs text-white">{payment.address}</p>
+                    {payment.userDepositReference ? (
+                      <p className="mt-3 text-xs text-[#718096]">
+                        Assigned sub-wallet: <span className="font-mono text-white">{payment.userDepositReference}</span>
+                      </p>
+                    ) : null}
+                    {payment.treasuryAddress ? (
+                      <p className="mt-2 text-xs text-[#718096]">
+                        Treasury wallet: <span className="font-mono text-white">{payment.treasuryAddress}</span>
+                      </p>
+                    ) : null}
                     <button
                       onClick={copyPaymentAddress}
                       className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#00E5FF]/20 py-3 text-sm font-medium text-[#00E5FF] hover:bg-[#00E5FF]/30"

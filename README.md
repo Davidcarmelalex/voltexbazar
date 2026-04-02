@@ -64,6 +64,8 @@ npm run dev
 - backend served on a private port
 - PostgreSQL as source of truth
 - webhook-secured crypto payment confirmation
+- treasury wallet defaulted to `0xa8CBFC06285A23E892Fb74c34a63F28988Beb9C6`
+- user deposits tracked through persistent virtual sub-wallet references under the shared treasury
 - deployment lifecycle visible to authenticated users
 
 ## Key Documents
@@ -76,3 +78,5 @@ npm run dev
 ## Current Direction
 
 VoltexBazar is being shaped into a world-class marketplace repo and a clean production deployment target. The goal is not just a polished landing page, but a credible end-to-end product with strong repo discipline, deployment clarity, and an operator-grade user journey.
+
+The current payment model is treasury-routed: users are assigned internal sub-wallet references for reconciliation, while real on-chain custody still lands in the shared EVM treasury wallet above.

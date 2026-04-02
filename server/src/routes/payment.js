@@ -21,6 +21,7 @@ const {
   sendPaymentConfirmedEmail,
   sendWithdrawalQueuedEmail,
 } = require('../lib/mailer');
+const { prisma } = require('../lib/store');
 const {
   validatePositiveAmount,
   validateWalletAddress,
@@ -28,6 +29,7 @@ const {
 
 const router = express.Router();
 
+const DEFAULT_TREASURY_WALLET_ADDRESS = '0xa8CBFC06285A23E892Fb74c34a63F28988Beb9C6';
 const PAYMENT_TOKEN = process.env.PAYMENT_TOKEN || 'USDT';
 const PAYMENT_CHAIN = process.env.PAYMENT_CHAIN || 'Base';
 const PAYMENT_SUPPORTED_TOKENS = (process.env.PAYMENT_SUPPORTED_TOKENS || `${PAYMENT_TOKEN},USDC`)
@@ -38,7 +40,7 @@ const PAYMENT_SUPPORTED_CHAINS = (process.env.PAYMENT_SUPPORTED_CHAINS || PAYMEN
   .split(',')
   .map((item) => item.trim())
   .filter(Boolean);
-const PAYMENT_WALLET_ADDRESS = process.env.PAYMENT_WALLET_ADDRESS || '';
+const PAYMENT_WALLET_ADDRESS = process.env.PAYMENT_WALLET_ADDRESS || DEFAULT_TREASURY_WALLET_ADDRESS;
 const PAYMENT_TTL_MINUTES = Number(process.env.PAYMENT_TTL_MINUTES || 30);
 const PAYMENT_CONFIRMATIONS_REQUIRED = Number(process.env.PAYMENT_CONFIRMATIONS_REQUIRED || 3);
 
@@ -54,18 +56,64 @@ function requireTreasuryAddress() {
 
 function generateDepositAddress(userId, paymentId) {
   requireTreasuryAddress();
-  const derivedSuffix = crypto
-    .createHash('sha256')
+  const derivedSuffix = crypto.createHash('sha256')
     .update(`${userId}:${paymentId}:${PAYMENT_WALLET_ADDRESS}`)
     .digest('hex')
-    .slice(0, 16);
+    .slice(0, 8)
+    .toUpperCase();
 
-  return `${PAYMENT_WALLET_ADDRESS}:${derivedSuffix}`;
+  return `${getUserDepositReference(userId)}:${derivedSuffix}`;
+}
+
+function generateSubwalletId(userId) {
+  requireTreasuryAddress();
+  return `VBZ-${crypto.createHash('sha256')
+    .update(`${userId}:${PAYMENT_WALLET_ADDRESS}`)
+    .digest('hex')
+    .slice(0, 12)
+    .toUpperCase()}`;
+}
+
+function getUserDepositReference(userId) {
+  return `${PAYMENT_WALLET_ADDRESS}:${generateSubwalletId(userId)}`;
+}
+
+async function ensureUserSubwallet(userId) {
+  requireTreasuryAddress();
+  const depositReference = getUserDepositReference(userId);
+  const user = await findUserById(userId);
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  if (user.walletAddress !== depositReference) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { walletAddress: depositReference },
+    });
+  }
+
+  return {
+    subwalletId: generateSubwalletId(userId),
+    depositReference,
+    treasuryAddress: PAYMENT_WALLET_ADDRESS,
+  };
 }
 
 async function ensureWallet(userId) {
   requireTreasuryAddress();
-  return getOrCreateWallet(userId, PAYMENT_WALLET_ADDRESS);
+  const [wallet, subwallet] = await Promise.all([
+    getOrCreateWallet(userId, PAYMENT_WALLET_ADDRESS),
+    ensureUserSubwallet(userId),
+  ]);
+
+  return {
+    ...wallet,
+    address: subwallet.depositReference,
+    treasuryAddress: subwallet.treasuryAddress,
+    subwalletId: subwallet.subwalletId,
+  };
 }
 
 function resolveRequestedCurrency(rawCurrency) {
@@ -110,7 +158,7 @@ router.post('/create', requireAuth, async (req, res) => {
       amount: parsedAmount,
       currency: resolvedCurrency,
       chain: PAYMENT_CHAIN,
-      address: wallet.address,
+      address: wallet.treasuryAddress,
       receiveAddress,
       status: 'pending',
       txHash: null,
@@ -119,7 +167,9 @@ router.post('/create', requireAuth, async (req, res) => {
       expiresAt,
       instructions: `Send exactly ${parsedAmount} ${resolvedCurrency} on ${PAYMENT_CHAIN} to the unique deposit reference shown. Only EVM-compatible stablecoin transfers are accepted for now.`,
       metadata: {
-        treasuryAddress: wallet.address,
+        treasuryAddress: wallet.treasuryAddress,
+        subwalletId: wallet.subwalletId,
+        userDepositReference: wallet.address,
         depositReference: receiveAddress,
       },
     });
@@ -131,7 +181,7 @@ router.post('/create', requireAuth, async (req, res) => {
         amount: payment.amount,
         currency: payment.currency,
         address: payment.receiveAddress,
-        treasuryAddress: payment.address,
+        treasuryAddress: wallet.treasuryAddress,
         network: payment.chain,
         expiresAt: payment.expiresAt,
       });
@@ -144,7 +194,9 @@ router.post('/create', requireAuth, async (req, res) => {
         amount: payment.amount,
         currency: payment.currency,
         address: payment.receiveAddress,
-        treasuryAddress: payment.address,
+        treasuryAddress: wallet.treasuryAddress,
+        subwalletId: wallet.subwalletId,
+        userDepositReference: wallet.address,
         network: payment.chain,
         expiresAt: payment.expiresAt,
         instructions: payment.instructions,
@@ -281,6 +333,7 @@ router.get('/config', (req, res) => {
       confirmationsRequired: PAYMENT_CONFIRMATIONS_REQUIRED,
       walletAddress: PAYMENT_WALLET_ADDRESS,
       walletReady,
+      subwalletMode: 'virtual-ledger',
     },
   });
 });

@@ -53,6 +53,13 @@ async function findUserById(id) {
   return prisma.user.findUnique({ where: { id } });
 }
 
+async function updateUserWalletAddress(id, walletAddress) {
+  return prisma.user.update({
+    where: { id },
+    data: { walletAddress },
+  });
+}
+
 async function findUserByEmail(email) {
   return prisma.user.findUnique({ where: { email } });
 }
@@ -196,6 +203,7 @@ module.exports = {
   sampleAgents,
   sanitizeUser,
   findUserById,
+  updateUserWalletAddress,
   findUserByEmail,
   findUserByPhone,
   findUserByGoogleId,

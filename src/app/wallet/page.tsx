@@ -104,7 +104,7 @@ export default function WalletPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
             <h1 className="text-3xl font-bold font-[family-name:var(--font-orbitron)] mb-2 text-white">Wallet</h1>
-            <p className="text-[#A0AEC0]">Manage treasury deposits, pending confirmations, and withdrawal requests.</p>
+            <p className="text-[#A0AEC0]">Manage your assigned deposit sub-wallet, pending confirmations, and withdrawal requests.</p>
           </motion.div>
 
           <div className="grid lg:grid-cols-3 gap-8">
@@ -116,7 +116,7 @@ export default function WalletPage() {
                       <Wallet className="w-6 h-6 text-[#00E5FF]" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold text-white">Treasury Balance</h2>
+                      <h2 className="text-lg font-semibold text-white">Wallet Balance</h2>
                       <p className="text-sm text-[#718096]">{paymentIntent?.currency || "USDT"} ({paymentIntent?.network || "Configured chain"})</p>
                     </div>
                   </div>
@@ -137,8 +137,19 @@ export default function WalletPage() {
                 <div className="flex items-center gap-2 text-sm text-[#718096] mb-6">
                   <span className="flex items-center gap-1">
                     <TrendingUp className="w-4 h-4 text-[#00FFC6]" />
-                    Funding and settlement visibility
+                    Treasury-routed funding with user-level deposit tracking
                   </span>
+                </div>
+
+                <div className="grid gap-3 rounded-2xl border border-white/10 bg-[#101826] p-4 text-sm sm:grid-cols-2 mb-6">
+                  <div>
+                    <p className="text-[#718096] mb-1">Sub-wallet ID</p>
+                    <p className="font-mono text-white break-all">{wallet?.subwalletId || "Assigned after first wallet load"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#718096] mb-1">Treasury Wallet</p>
+                    <p className="font-mono text-white break-all">{wallet?.treasuryAddress || paymentIntent?.treasuryAddress || "Not configured"}</p>
+                  </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -227,13 +238,20 @@ export default function WalletPage() {
                   <p className="text-xs text-[#718096] mb-2">{paymentIntent?.currency || "USDT"} ({paymentIntent?.network || "Configured chain"})</p>
                   <p className="text-sm text-white font-mono break-all">{paymentIntent?.address || wallet?.address || "Create a deposit order to get a unique reference."}</p>
                 </div>
+                <div className="mb-4 rounded-xl border border-white/10 bg-[#0E1525] p-4">
+                  <p className="mb-2 text-xs uppercase tracking-[0.18em] text-[#718096]">Assigned user sub-wallet</p>
+                  <p className="text-sm font-mono break-all text-white">{paymentIntent?.userDepositReference || wallet?.address || "Will appear after wallet initialization."}</p>
+                  <p className="mt-2 text-xs leading-6 text-[#A0AEC0]">
+                    This is your persistent internal deposit route. Individual payment orders add a unique suffix so the backend can reconcile deposits against your account.
+                  </p>
+                </div>
                 {paymentIntent?.instructions ? (
                   <p className="mb-4 text-xs leading-6 text-[#A0AEC0]">{paymentIntent.instructions}</p>
                 ) : null}
                 <button onClick={copyAddress} className="w-full flex items-center justify-center gap-2 py-3 bg-[#00E5FF]/20 text-[#00E5FF] rounded-xl font-medium hover:bg-[#00E5FF]/30 transition-colors">
                   <Copy className="w-4 h-4" /> {copied ? "Copied!" : "Copy Address"}
                 </button>
-                <p className="text-xs text-[#718096] mt-3 text-center">Send only the configured token to this address.</p>
+                <p className="text-xs text-[#718096] mt-3 text-center">Send only the configured token on the configured chain. Funds settle into the shared treasury and are credited to your sub-wallet ledger.</p>
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-[#0A0F1C] border border-white/10 rounded-2xl p-6">

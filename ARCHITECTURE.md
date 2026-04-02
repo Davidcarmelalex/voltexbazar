@@ -24,6 +24,7 @@ The backend handles:
 - OTP and password login flows
 - agent catalog API
 - payment order creation and webhook settlement
+- shared treasury custody plus user-level virtual sub-wallet assignment
 - subscription activation
 - deployment lifecycle records
 
@@ -39,6 +40,8 @@ PostgreSQL stores:
 - payments
 - wallets
 - subscriptions
+
+User wallet records represent the internal ledger state. Deposits currently settle into the shared treasury wallet `0xa8CBFC06285A23E892Fb74c34a63F28988Beb9C6`, and each user is assigned a stable virtual sub-wallet reference for attribution and reconciliation.
 
 ## Deployment Model
 
@@ -60,3 +63,4 @@ PostgreSQL stores:
 - formalize seed data for marketplace agents
 - add admin workflows for catalog and order operations
 - add structured observability and incident reporting
+- move from virtual sub-wallet references to real managed deposit addresses only if secure key-management infrastructure is introduced
