@@ -1,0 +1,18 @@
+[Unit]
+Description=VoltexBazar Express API
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/projects-core/voltexbazar/server
+Environment=NODE_ENV=production
+EnvironmentFile=/root/projects-core/voltexbazar/server/.env
+ExecStart=/usr/bin/node /root/projects-core/voltexbazar/server/src/index.js
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/voltexbazar/api.log
+StandardError=append:/var/log/voltexbazar/api-error.log
+
+[Install]
+WantedBy=multi-user.target

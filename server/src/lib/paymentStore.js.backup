@@ -1,0 +1,62 @@
+const { readJsonFile, writeJsonFile } = require('./jsonStore');
+
+function readStore() {
+  return readJsonFile('payments.json', { payments: [], wallets: [] });
+}
+
+function writeStore(store) {
+  writeJsonFile('payments.json', store);
+}
+
+function listPayments() {
+  return readStore().payments;
+}
+
+function listWallets() {
+  return readStore().wallets;
+}
+
+function saveWallet(wallet) {
+  const store = readStore();
+  const nextWallets = store.wallets.filter((item) => item.userId !== wallet.userId);
+  nextWallets.push(wallet);
+  writeStore({ ...store, wallets: nextWallets });
+  return wallet;
+}
+
+function savePayment(payment) {
+  const store = readStore();
+  const nextPayments = store.payments.filter((item) => item.id !== payment.id);
+  nextPayments.push(payment);
+  writeStore({ ...store, payments: nextPayments });
+  return payment;
+}
+
+function findWalletByUserId(userId) {
+  return listWallets().find((wallet) => wallet.userId === userId) || null;
+}
+
+function findPaymentById(id) {
+  return listPayments().find((payment) => payment.id === id) || null;
+}
+
+function findPaymentByAddress(address) {
+  return listPayments().find((payment) => payment.address === address || payment.receiveAddress === address) || null;
+}
+
+function findPaymentsByUserId(userId) {
+  return listPayments()
+    .filter((payment) => payment.userId === userId)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+module.exports = {
+  listPayments,
+  listWallets,
+  saveWallet,
+  savePayment,
+  findWalletByUserId,
+  findPaymentById,
+  findPaymentByAddress,
+  findPaymentsByUserId,
+};

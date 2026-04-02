@@ -1,0 +1,52 @@
+const { readJsonFile, writeJsonFile } = require('./jsonStore');
+
+function readStore() {
+  return readJsonFile('deployments.json', { subscriptions: [], deployments: [] });
+}
+
+function writeStore(store) {
+  writeJsonFile('deployments.json', store);
+}
+
+function saveSubscription(subscription) {
+  const store = readStore();
+  const subscriptions = store.subscriptions.filter((item) => item.id !== subscription.id);
+  subscriptions.push(subscription);
+  writeStore({ ...store, subscriptions });
+  return subscription;
+}
+
+function saveDeployment(deployment) {
+  const store = readStore();
+  const deployments = store.deployments.filter((item) => item.id !== deployment.id);
+  deployments.push(deployment);
+  writeStore({ ...store, deployments });
+  return deployment;
+}
+
+function findSubscriptionByUserAndAgent(userId, agentId) {
+  return readStore().subscriptions.find((item) => item.userId === userId && item.agentId === agentId) || null;
+}
+
+function findActiveSubscriptionByUser(userId) {
+  return readStore().subscriptions.find((item) => item.userId === userId && item.status === 'active') || null;
+}
+
+function findDeploymentById(id) {
+  return readStore().deployments.find((item) => item.id === id) || null;
+}
+
+function findDeploymentsByUser(userId) {
+  return readStore().deployments
+    .filter((item) => item.userId === userId)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+module.exports = {
+  saveSubscription,
+  saveDeployment,
+  findSubscriptionByUserAndAgent,
+  findActiveSubscriptionByUser,
+  findDeploymentById,
+  findDeploymentsByUser,
+};

@@ -1,0 +1,89 @@
+const { v4: uuidv4 } = require('uuid');
+const { PersistentMap } = require('./persistentMap');
+
+const sampleAgents = [
+  { id: '1', name: 'Client Hunter AI', description: 'Finds & contacts leads daily', price: 49, category: 'Marketing', icon: '🎯', tags: ['leads', 'outreach'] },
+  { id: '2', name: 'WhatsApp Sales Pro', description: 'Automates sales conversations', price: 79, category: 'Sales', icon: '💬', tags: ['whatsapp', 'sales'] },
+  { id: '3', name: 'Content Generator', description: 'Creates content automatically', price: 39, category: 'Content', icon: '✍️', tags: ['content', 'blog'] },
+  { id: '4', name: 'Data Analyst AI', description: 'Processes data and generates insights', price: 99, category: 'Analytics', icon: '📊', tags: ['data', 'analytics'] },
+  { id: '5', name: 'Support Bot', description: 'Handles customer queries 24/7', price: 59, category: 'Support', icon: '🎧', tags: ['support', 'chatbot'] },
+  { id: '6', name: 'Email Marketer', description: 'Automated email campaigns', price: 45, category: 'Marketing', icon: '📧', tags: ['email', 'marketing'] },
+];
+
+const users = new PersistentMap('users.json', 'id');
+const otps = new PersistentMap('otps.json', 'phone');
+const analytics = new PersistentMap('analytics.json', 'userId');
+const agents = new PersistentMap('agents.json', 'id', sampleAgents);
+const deployedAgents = new PersistentMap('runtimeDeployments.json', 'id');
+
+function sanitizeUser(user) {
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone || null,
+    avatar: user.avatar || null,
+    subscription: user.subscription || 'free',
+    createdAt: user.createdAt,
+  };
+}
+
+function findUserByEmail(email) {
+  return Array.from(users.values()).find((user) => user.email === email);
+}
+
+function findUserByPhone(phone) {
+  return Array.from(users.values()).find((user) => user.phone === phone);
+}
+
+function findUserByGoogleId(googleId) {
+  return Array.from(users.values()).find((user) => user.googleId === googleId);
+}
+
+function upsertGoogleUser(profile) {
+  const email = profile.emails?.[0]?.value;
+  const avatar = profile.photos?.[0]?.value || null;
+  let user = findUserByGoogleId(profile.id);
+
+  if (!user && email) {
+    user = findUserByEmail(email);
+  }
+
+  if (user) {
+    user.googleId = profile.id;
+    user.email = email || user.email;
+    user.name = profile.displayName || user.name;
+    user.avatar = avatar;
+    user.updatedAt = new Date().toISOString();
+    users.set(user.id, user);
+    return user;
+  }
+
+  const newUser = {
+    id: uuidv4(),
+    name: profile.displayName || 'Voltex User',
+    email: email || `${profile.id}@voltexai.local`,
+    googleId: profile.id,
+    avatar,
+    subscription: 'free',
+    createdAt: new Date().toISOString(),
+  };
+
+  users.set(newUser.id, newUser);
+  return newUser;
+}
+
+module.exports = {
+  users,
+  otps,
+  analytics,
+  agents,
+  deployedAgents,
+  sanitizeUser,
+  findUserByEmail,
+  findUserByPhone,
+  findUserByGoogleId,
+  upsertGoogleUser,
+};

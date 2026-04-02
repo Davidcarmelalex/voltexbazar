@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String            @id @default(uuid())
+  name           String
+  email          String            @unique
+  phone          String?           @unique
+  password       String?
+  googleId       String?           @unique
+  avatar         String?
+  walletAddress  String?
+  subscription   String            @default("free")
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  // Relations
+  otps           OTP[]
+  analytics      Analytics[]
+  deployedAgents DeployedAgent[]
+  payments       Payment[]
+  wallets        Wallet[]
+  subscriptions  Subscription[]
+  withdrawals    Withdrawal[]
+}
+
+model OTP {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  codeHash  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+
+}
+
+model Analytics {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  metrics   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Agent {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Int
+  category    String
+  icon        String
+  tags        Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  deployedAgents DeployedAgent[]
+  subscriptions  Subscription[]
+}
+
+model DeployedAgent {
+  id             String   @id @default(uuid())
+  agentId        String
+  agent          Agent     @relation(fields: [agentId], references: [id])
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  config         Json
+  status         String     @default("provisioning") // provisioning, running, stopped, failed
+  vpsIp          String?
+  containerName  String?
+  deploymentMode String?
+  execution      Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  plan           String
+  amount         Decimal  @db.Decimal(18, 8)
+  currency       String
+  chain          String
+  address        String
+  receiveAddress String
+  status         String   @default("pending") // pending, processing, completed, failed, expired
+  txHash         String?
+  fromAddress    String?
+  confirmations  Int      @default(0)
+  expectedAmount Decimal  @db.Decimal(18, 8)
+  creditedAmount Decimal  @default(0) @db.Decimal(18, 8)
+  ledgerApplied  Boolean  @default(false)
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  expiresAt      DateTime
+  instructions String
+}
+
+model Wallet {
+  id             String            @id @default(uuid())
+  userId         String            @unique
+  user           User              @relation(fields: [userId], references: [id])
+  address        String
+  balance        Decimal           @default(0) @db.Decimal(18, 8)
+  pendingBalance Decimal           @default(0) @db.Decimal(18, 8)
+  lockedBalance  Decimal           @default(0) @db.Decimal(18, 8)
+  lastSettledAt  DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  withdrawals    Withdrawal[]
+  ledgerEntries  WalletLedgerEntry[]
+
+}
+
+model Subscription {
+  deployedAgents DeployedAgent[]
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  agentId        String
+  agent          Agent    @relation(fields: [agentId], references: [id])
+  agentName      String
+  plan           String
+  paymentId      String   @unique
+  status         String   @default("active") // active, inactive, cancelled
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, agentId])
+}
+
+model Withdrawal {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  walletId  String
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  amount    Decimal  @db.Decimal(18, 8)
+  address   String
+  chain     String
+  currency  String
+  status    String   @default("pending_review")
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ledgerEntries WalletLedgerEntry[]
+}
+
+model WalletLedgerEntry {
+  id           String      @id @default(uuid())
+  walletId     String
+  wallet       Wallet      @relation(fields: [walletId], references: [id])
+  paymentId    String?
+  withdrawalId String?
+  withdrawal   Withdrawal? @relation(fields: [withdrawalId], references: [id])
+  type         String
+  amount       Decimal     @db.Decimal(18, 8)
+  balanceAfter Decimal     @db.Decimal(18, 8)
+  description  String
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+}

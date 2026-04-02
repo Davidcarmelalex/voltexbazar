@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The Express backend is a separate package with its own runtime and rules.
+    "server/**",
   ]),
 ]);
 

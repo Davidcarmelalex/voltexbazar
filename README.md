@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VoltexBazar
 
-## Getting Started
+VoltexBazar is the AI agent marketplace inside the Voltex Network ecosystem.
 
-First, run the development server:
+## Product Positioning
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+VoltexBazar is designed for non-technical operators, service businesses, and modern commerce teams that want deployable AI agents without having to become infrastructure engineers first.
+
+- public domain: `voltexbazar.io`
+- umbrella ecosystem: `Voltex Network`
+- primary launch market: UAE
+- product scope: marketplace, checkout, subscription activation, deployment flow, operator dashboard
+- payment scope for now: `USDT` and `USDC` on EVM-compatible chains only
+
+## Stack
+
+### Frontend
+
+- Next.js 16
+- React 19
+- Tailwind CSS 4
+- app router
+
+### Backend
+
+- Express
+- Prisma
+- PostgreSQL
+- JWT auth
+- payment order + wallet flow
+- deployment orchestration layer
+
+## Repository Layout
+
+```text
+src/                    Next.js frontend
+server/                 Express + Prisma backend
+deploy/nginx/           public reverse proxy config
+deploy/systemd/         frontend and backend service units
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Frontend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+### Backend
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cd server
+npm install
+npx prisma generate
+npx prisma migrate deploy
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Production Baseline
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- frontend served behind Nginx
+- backend served on a private port
+- PostgreSQL as source of truth
+- webhook-secured crypto payment confirmation
+- deployment lifecycle visible to authenticated users
 
-## Deploy on Vercel
+## Key Documents
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [Architecture](./ARCHITECTURE.md)
+- [Deployment](./DEPLOYMENT.md)
+- [Progress](./PROGRESS.md)
+- [Deploy folder](./deploy/README.md)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Current Direction
+
+VoltexBazar is being shaped into a world-class marketplace repo and a clean production deployment target. The goal is not just a polished landing page, but a credible end-to-end product with strong repo discipline, deployment clarity, and an operator-grade user journey.
