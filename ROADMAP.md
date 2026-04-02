@@ -31,7 +31,7 @@
 ## Phase 4: Deployment
 - [ ] Build and test
 - [ ] Deploy to debian server
-- [ ] Configure domain voltexai.tech
+- [ ] Configure domain voltexbazar.io
 - [ ] SSL setup
 - [ ] Go live
 

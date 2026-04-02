@@ -86,7 +86,7 @@ async function findOrCreatePhoneUser(phone) {
 }
 
 async function upsertGoogleUser(profile) {
-  const email = profile.emails?.[0]?.value || `${profile.id}@voltexai.local`;
+  const email = profile.emails?.[0]?.value || `${profile.id}@voltexbazar.local`;
   const avatar = profile.photos?.[0]?.value || null;
 
   const existingByGoogleId = await findUserByGoogleId(profile.id);

@@ -6,11 +6,22 @@ const MAIL_PROVIDER = process.env.MAIL_PROVIDER || (process.env.SENDGRID_API_KEY
 const MAIL_FROM = process.env.MAIL_FROM || 'VoltexBazar <noreply@voltexbazar.io>';
 
 function canUseSendGrid() {
-  return Boolean(process.env.SENDGRID_API_KEY);
+  return Boolean(
+    process.env.SENDGRID_API_KEY &&
+    process.env.SENDGRID_API_KEY.startsWith('SG.')
+  );
 }
 
 function canUseSmtp() {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS);
+  return Boolean(
+    process.env.SMTP_HOST &&
+    process.env.SMTP_PORT &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASS &&
+    process.env.SMTP_HOST !== 'smtp.example.com' &&
+    process.env.SMTP_USER !== 'your-smtp-user' &&
+    process.env.SMTP_PASS !== 'your-smtp-pass'
+  );
 }
 
 function buildTransport() {

@@ -43,7 +43,11 @@ const PAYMENT_TTL_MINUTES = Number(process.env.PAYMENT_TTL_MINUTES || 30);
 const PAYMENT_CONFIRMATIONS_REQUIRED = Number(process.env.PAYMENT_CONFIRMATIONS_REQUIRED || 3);
 
 function requireTreasuryAddress() {
-  if (!PAYMENT_WALLET_ADDRESS) {
+  if (
+    !PAYMENT_WALLET_ADDRESS ||
+    !validateWalletAddress(PAYMENT_WALLET_ADDRESS) ||
+    PAYMENT_WALLET_ADDRESS.includes('YourTreasuryWallet')
+  ) {
     throw new Error('PAYMENT_WALLET_ADDRESS must be configured for production deposits');
   }
 }
@@ -75,6 +79,8 @@ function resolveRequestedCurrency(rawCurrency) {
 
 router.post('/create', requireAuth, async (req, res) => {
   try {
+    requireTreasuryAddress();
+
     const { plan, amount, currency } = req.body;
     const userId = req.user.userId;
     const parsedAmount = validatePositiveAmount(amount, { min: 10, max: 250000 });
@@ -145,6 +151,13 @@ router.post('/create', requireAuth, async (req, res) => {
       },
     });
   } catch (error) {
+    if (error.message === 'PAYMENT_WALLET_ADDRESS must be configured for production deposits') {
+      return res.status(503).json({
+        success: false,
+        message: 'Crypto payments are not enabled yet on this server',
+      });
+    }
+
     logger.error('create_payment_failed', { error: error.message, stack: error.stack });
     return res.status(500).json({ success: false, message: 'Failed to create payment' });
   }
@@ -252,6 +265,11 @@ router.post('/webhook', async (req, res) => {
 });
 
 router.get('/config', (req, res) => {
+  const walletReady =
+    Boolean(PAYMENT_WALLET_ADDRESS) &&
+    validateWalletAddress(PAYMENT_WALLET_ADDRESS) &&
+    !PAYMENT_WALLET_ADDRESS.includes('YourTreasuryWallet');
+
   res.json({
     success: true,
     config: {
@@ -262,6 +280,7 @@ router.get('/config', (req, res) => {
       paymentWindowMinutes: PAYMENT_TTL_MINUTES,
       confirmationsRequired: PAYMENT_CONFIRMATIONS_REQUIRED,
       walletAddress: PAYMENT_WALLET_ADDRESS,
+      walletReady,
     },
   });
 });
