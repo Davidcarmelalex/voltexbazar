@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS memory (
+    id SERIAL PRIMARY KEY,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
