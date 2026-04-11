@@ -1,0 +1,4 @@
+V3 Integration Steps:
+1. Fetch memories from memory-engine
+2. Inject into AI prompt as context
+3. Store new user inputs automatically
