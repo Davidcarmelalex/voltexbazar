@@ -1,149 +1,127 @@
+"use client";
 import Link from "next/link";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import { ArrowRight, Coins, Rocket, ShieldCheck, Wallet } from "lucide-react";
+import { Check, Zap } from "lucide-react";
 
 const plans = [
   {
     name: "Starter",
-    price: "$49",
-    cadence: "/month",
-    audience: "For solo operators testing their first AI workflow",
+    price: "Free",
+    period: "",
+    description: "Explore the marketplace and test agents before deploying.",
     features: [
-      "One launch-ready agent",
-      "Crypto-first checkout",
-      "Deployment onboarding path",
-      "Basic operator dashboard",
+      "Access to marketplace",
+      "1 agent (limited)",
+      "500 tasks / month",
+      "Email support",
+      "Community access",
     ],
-  },
-  {
-    name: "Growth",
-    price: "$149",
-    cadence: "/month",
-    audience: "For service teams and lean businesses that need repeatable automation",
-    features: [
-      "Multiple agent categories",
-      "Priority deployment queue",
-      "Wallet and transaction visibility",
-      "Commercial workflow support",
-    ],
-    featured: true,
+    cta: "Get Started",
+    href: "/auth/register",
+    highlighted: false,
   },
   {
     name: "Operator",
-    price: "Custom",
-    cadence: "",
-    audience: "For organizations that want managed rollout and deeper Voltex support",
+    price: "149",
+    period: "USDT / month",
+    description: "For businesses ready to deploy agents and automate operations.",
     features: [
-      "Custom deployment model",
-      "Managed activation support",
-      "Higher-touch operating design",
-      "Scaled commercial rollout planning",
+      "Up to 5 active agents",
+      "50,000 tasks / month",
+      "All marketplace agents",
+      "Custom agent configuration",
+      "Priority support",
+      "Webhook integrations",
+      "Analytics dashboard",
     ],
+    cta: "Deploy Now",
+    href: "/auth/register?plan=operator",
+    highlighted: true,
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    period: "",
+    description: "For institutions that need dedicated infrastructure and SLAs.",
+    features: [
+      "Unlimited agents",
+      "Unlimited tasks",
+      "Dedicated deployment",
+      "Custom agent development",
+      "SLA guarantees",
+      "White-label option",
+      "Dedicated account manager",
+      "On-premise deployment",
+    ],
+    cta: "Contact Sales",
+    href: "/support",
+    highlighted: false,
   },
 ];
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-[#05070D] text-white">
-      <Navbar />
-      <section className="border-b border-white/8 pt-24">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.24em] text-[#00E5FF]">
-              <Coins className="h-4 w-4" />
-              Pricing built for real deployment, not vanity tiers
-            </div>
-            <h1 className="mt-6 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
-              Clear plans for buyers who care about outcomes, not AI jargon.
-            </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-[#A0AEC0]">
-              VoltexBazar pricing is structured around launch readiness, payment clarity, and deployment support.
-              The product should feel easy to buy and easy to trust.
-            </p>
-          </div>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.08),transparent_35%),linear-gradient(180deg,#09090b_0%,#000_100%)] text-white">
+      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+        <div className="text-center mb-16">
+          <span className="inline-block border border-purple-500/30 bg-purple-500/10 px-3 py-1 text-xs font-medium tracking-[0.2em] text-purple-300 uppercase mb-6">
+            Pricing
+          </span>
+          <h1 className="text-4xl font-bold md:text-5xl">Simple, transparent pricing</h1>
+          <p className="mt-4 text-silver max-w-xl mx-auto">
+            Pay in USDT or USDC. No hidden fees. Cancel anytime. Deploy agents in minutes.
+          </p>
         </div>
-      </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`rounded-[2rem] border p-8 ${
-                plan.featured
-                  ? "border-[#00E5FF]/40 bg-[linear-gradient(180deg,rgba(0,229,255,0.10),rgba(10,15,28,0.94))]"
-                  : "border-white/10 bg-white/5"
+              className={`rounded-xl border p-8 flex flex-col ${
+                plan.highlighted
+                  ? "border-purple-500/50 bg-purple-500/10 ring-1 ring-purple-500/20"
+                  : "border-white/8 bg-white/3"
               }`}
             >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.22em] text-[#00E5FF]">{plan.name}</p>
-                  <div className="mt-4 flex items-end gap-2">
-                    <span className="text-4xl font-semibold text-white">{plan.price}</span>
-                    <span className="pb-1 text-sm text-[#718096]">{plan.cadence}</span>
-                  </div>
+              {plan.highlighted && (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-purple-300 mb-4">
+                  <Zap className="h-3.5 w-3.5" /> Most popular
                 </div>
-                {plan.featured ? (
-                  <span className="rounded-full bg-[#00E5FF]/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#00E5FF]">
-                    Best launch fit
-                  </span>
-                ) : null}
+              )}
+              <h2 className="text-lg font-semibold text-white">{plan.name}</h2>
+              <div className="mt-3 mb-2">
+                <span className="text-4xl font-bold text-white">{plan.price}</span>
+                {plan.period && <span className="text-sm text-silver ml-2">{plan.period}</span>}
               </div>
-
-              <p className="mt-5 text-sm leading-7 text-[#A0AEC0]">{plan.audience}</p>
-
-              <ul className="mt-8 space-y-3">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3 text-sm text-white">
-                    <span className="mt-1 h-2 w-2 rounded-full bg-[#00FFC6]" />
-                    <span>{feature}</span>
+              <p className="text-sm text-silver mb-6">{plan.description}</p>
+              <ul className="space-y-3 flex-1 mb-8">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm text-silver">
+                    <Check className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    {f}
                   </li>
                 ))}
               </ul>
-
               <Link
-                href="/auth"
-                className={`mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-semibold transition-colors ${
-                  plan.featured
-                    ? "bg-[#00E5FF] text-[#05070D] hover:bg-[#00FFC6]"
-                    : "border border-white/10 bg-[#101826] text-white hover:border-[#00E5FF]/40"
+                href={plan.href}
+                className={`rounded border px-6 py-3 text-sm font-medium text-center transition-colors ${
+                  plan.highlighted
+                    ? "border-purple-500/60 bg-purple-500/20 text-purple-200 hover:bg-purple-500/30"
+                    : "border-white/10 text-silver hover:border-white/30"
                 }`}
               >
-                Start With {plan.name}
-                <ArrowRight className="h-4 w-4" />
+                {plan.cta}
               </Link>
             </div>
           ))}
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {[
-            {
-              icon: Wallet,
-              title: "Crypto-first payment path",
-              body: "Launches start with USDT and USDC on EVM-compatible chains instead of scattered billing options.",
-            },
-            {
-              icon: ShieldCheck,
-              title: "Deployment guardrails",
-              body: "Plans are framed around what can be activated credibly, not fake enterprise promises.",
-            },
-            {
-              icon: Rocket,
-              title: "Built to go live",
-              body: "Each tier maps to a launch posture so the buyer understands the next step immediately.",
-            },
-          ].map((item) => (
-            <div key={item.title} className="rounded-[2rem] border border-white/10 bg-[#0A0F1C] p-6">
-              <item.icon className="h-5 w-5 text-[#00E5FF]" />
-              <h2 className="mt-4 text-xl font-semibold text-white">{item.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-[#A0AEC0]">{item.body}</p>
-            </div>
-          ))}
+        <div className="mt-16 text-center">
+          <p className="text-sm text-silver/60">
+            All plans accept USDT and USDC on EVM-compatible networks.{" "}
+            <Link href="/wallet" className="text-purple-400 hover:text-purple-300">Set up your wallet →</Link>
+          </p>
         </div>
       </section>
-      <Footer />
     </main>
   );
 }
